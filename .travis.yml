@@ -60,5 +60,5 @@ install:
 script:
   - cd "${TRAVIS_BUILD_DIR}"
   - cmake --version
-  - cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_FLAGS="${CXX_FLAGS}"
+  - cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" -DRUN_TESTS_POSTBUILD=ON
   - cmake --build build
