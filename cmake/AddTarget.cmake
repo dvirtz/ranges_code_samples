@@ -5,6 +5,7 @@ function(add_range_target name rangeLib)
   target_link_libraries(${name} ${rangeLib})
   target_include_directories(${name} PRIVATE ${CMAKE_SOURCE_DIR}/include)
   target_compile_definitions(${name} PRIVATE $<IF:$<STREQUAL:${rangeLib},range-v3>,USE_RANGE_V3,USE_STL2>)
+  target_compile_options(${name} PRIVATE "-fconcepts")
 endfunction()
 
 function(add_ranges_test name)

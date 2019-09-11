@@ -15,6 +15,8 @@ include(${CMAKE_BINARY_DIR}/conan.cmake)
 set(ENV{CONAN_CMAKE_TOOLCHAIN_FILE} ${CMAKE_TOOLCHAIN_FILE})
 set(ENV{CONAN_CMAKE_GENERATOR} ${CMAKE_GENERATOR})
 
+# has no effect currently
+# https://github.com/conan-io/cmake-conan/issues/176
 conan_add_remote(
   NAME onebaseroach 
   URL https://api.bintray.com/conan/y4n9squared/onebaseroach)
@@ -22,6 +24,8 @@ conan_add_remote(
 conan_add_remote(
   NAME mputsz
   URL https://api.bintray.com/conan/mpusz/conan-mpusz)
+
+set(CMAKE_CXX_STANDARD 20)
 
 conan_cmake_run(REQUIRES 
                   range-v3/0.9.0@ericniebler/stable
