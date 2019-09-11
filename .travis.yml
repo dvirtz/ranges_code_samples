@@ -9,7 +9,8 @@ python: "3.7"
 
 cache:
   directories:
-    - ${TRAVIS_BUILD_DIR}/deps/cmake-3.12.4
+    - ${TRAVIS_BUILD_DIR}/deps/cmake-3.14.6
+    - ${HOME}/.conan/data
 
 matrix:
   include:
@@ -60,4 +61,4 @@ script:
   - cd "${TRAVIS_BUILD_DIR}"
   - cmake --version
   - cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_FLAGS="${CXX_FLAGS}"
-  - cmake --build
+  - cmake --build build
