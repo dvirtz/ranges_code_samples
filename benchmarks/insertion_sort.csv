@@ -1,0 +1,11 @@
+name,iterations,real_time,cpu_time,time_unit,bytes_per_second,items_per_second,label,error_occurred,error_message
+"naive/8",14582361,47.6902,47.3416,ns,,,,,
+"naive/64",193324,3639.56,3615.18,ns,,,,,
+"naive/512",2225,315134,313030,ns,,,,,
+"naive/4096",23,2.98232e+07,2.96541e+07,ns,,,,,
+"naive/16384",1,6.54791e+08,6.51298e+08,ns,,,,,
+"counted/8",20693406,34.6037,34.3276,ns,,,,,
+"counted/64",381272,1743.87,1733.15,ns,,,,,
+"counted/512",4652,156199,154355,ns,,,,,
+"counted/4096",45,1.52233e+07,1.50953e+07,ns,,,,,
+"counted/16384",2,3.26416e+08,3.24385e+08,ns,,,,,

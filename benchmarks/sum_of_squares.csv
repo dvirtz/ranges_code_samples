@@ -1,0 +1,24 @@
+2019-04-19 10:35:04
+Running /Users/dyitzchaki/projects/179-algorithms/_clang-6-cxx17_Release_range-v3/benchmarks/sum_of_squares
+Run on (8 X 2800 MHz CPU s)
+CPU Caches:
+  L1 Data 32K (x4)
+  L1 Instruction 32K (x4)
+  L2 Unified 262K (x4)
+  L3 Unified 6291K (x1)
+name,iterations,real_time,cpu_time,time_unit,bytes_per_second,items_per_second,label,error_occurred,error_message
+"naive/8",6831068,94.0689,93.8219,ns,,,,,
+"naive/64",4726057,156.972,155.668,ns,,,,,
+"naive/512",3219560,227.529,225.102,ns,,,,,
+"naive/4096",607518,1149.14,1142.55,ns,,,,,
+"naive/16384",95376,7223.49,7181.39,ns,,,,,
+"for_loop/8",443349442,1.56463,1.55677,ns,,,,,
+"for_loop/64",424391604,1.54094,1.53419,ns,,,,,
+"for_loop/512",445822957,1.55458,1.54683,ns,,,,,
+"for_loop/4096",450233156,1.62648,1.59859,ns,,,,,
+"for_loop/16384",444249821,1.54181,1.53411,ns,,,,,
+"ranges_/8",440750535,1.57682,1.56826,ns,,,,,
+"ranges_/64",436417140,1.60761,1.59617,ns,,,,,
+"ranges_/512",433026297,1.58087,1.57288,ns,,,,,
+"ranges_/4096",435098799,1.58524,1.57764,ns,,,,,
+"ranges_/16384",439753738,1.58118,1.57467,ns,,,,,

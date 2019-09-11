@@ -1,0 +1,3 @@
+[submodule "benchmarks/plot"]
+	path = benchmarks/plot
+	url = https://github.com/lakshayg/google_benchmark_plot.git

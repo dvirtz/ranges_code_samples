@@ -1,0 +1,5 @@
+.vscode/
+_*/
+.history/
+.python-version
+.DS_Store
