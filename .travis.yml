@@ -7,10 +7,6 @@ dist: xenial
 language: python
 python: "3.7"
 
-cache:
-  directories:
-    - ${TRAVIS_BUILD_DIR}/deps/cmake-3.12.4
-
 matrix:
   include:
     - env: GCC_VERSION=8 BUILD_TYPE=Debug
@@ -47,5 +43,6 @@ install:
 
 script:
   - cd "${TRAVIS_BUILD_DIR}"
+  - cmake --version
   - cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_FLAGS="${CXX_FLAGS}"
   - cmake --build
