@@ -10,94 +10,58 @@ namespace ranges = std::experimental::ranges;
 #endif
 #include <vector>
 
-static constexpr auto square = [](int x) { return x * x; };
-
-int naive_impl(int count) {
-  std::vector<int> numbers(static_cast<size_t>(count));
-  std::iota(numbers.begin(), numbers.end(), 1);
-  std::transform(numbers.begin(), numbers.end(), numbers.begin(), square);
-  return std::accumulate(numbers.begin(), numbers.end(), 0);
-}
-
-static void naive(benchmark::State &state) {
+template <typename F> static auto do_benchmark(benchmark::State &state, F &&f) {
   // Code inside this loop is measured repeatedly
   for (auto _ : state) {
-    int total = naive_impl(state.range(0));
+    int total = std::forward<F>(f)(state.range(0));
 
     // Make sure the variable is not optimized away by compiler
     benchmark::DoNotOptimize(total);
   }
 }
-// Register the function as a benchmark
-BENCHMARK(naive)->Range(8 << 4, 8 << 16);
 
-int for_loop_impl(int count) {
+#define DO_BENCHMARK(func)                                                     \
+  BENCHMARK_CAPTURE(do_benchmark, func, func)->Range(8 << 4, 8 << 16);
+
+int classic_stl(int count) {
+  std::vector<int> numbers(static_cast<size_t>(count));
+  std::iota(numbers.begin(), numbers.end(), 1);
+  std::transform(numbers.begin(), numbers.end(), numbers.begin(),
+                 [](int x) { return x * x; });
+  return std::accumulate(numbers.begin(), numbers.end(), 0);
+}
+
+DO_BENCHMARK(classic_stl)
+
+int for_loop(int count) {
   int total = 0;
   for (auto i = 1; i <= count; ++i) {
-    total += square(i);
+    total += i * i;
   }
   return total;
 }
 
-static void for_loop(benchmark::State &state) {
-  // Code inside this loop is measured repeatedly
-  for (auto _ : state) {
-    int total = for_loop_impl(state.range(0));
+DO_BENCHMARK(for_loop)
 
-    // Make sure the variable is not optimized away by compiler
-    benchmark::DoNotOptimize(total);
-  }
-}
-// Register the function as a benchmark
-BENCHMARK(for_loop)->Range(8 << 4, 8 << 16);
-
-int ranges_impl(int count) {
+int ranges_function_call(int count) {
   using namespace ranges;
-
-#ifdef USE_RANGE_V3
-#ifdef FUNCTION_CALL
   return accumulate(
-    views::take_exactly(
-      views::transform(
-        views::iota(1, unreachable), square
-      )), 0);
-#else
-  return accumulate(
-    views::iota(1) | views::transform(square) | views::take_exactly(count), 0);
-#endif
-#else
-  auto squares = views::iota(1) | views::transform(square) | views::take(count) | views::common;
-  return std::accumulate(squares.begin(), squares.end(), 0);
-#endif
+    views::transform(
+      views::iota(1, count), 
+      [](int x) { return x * x; }
+    ), 0
+  );
 }
 
-static void ranges_(benchmark::State &state) {
-  // Code before the loop is not measured
-  for (auto _ : state) {
-    int total = ranges_impl(state.range(0));
+DO_BENCHMARK(ranges_function_call)
 
-    // Make sure the variable is not optimized away by compiler
-    benchmark::DoNotOptimize(total);
-  }
-}
-BENCHMARK(ranges_)->Range(8 << 4, 8 << 16);
-
-int ranges_common_impl(int count) {
+int ranges_pipeline(int count) {
   using namespace ranges;
-
-  auto squares = views::iota(1) | views::transform(square) | views::take_exactly(count) | view::common;
-  return std::accumulate(squares.begin(), squares.end(), 0);
+  auto squares = views::iota(1, count) 
+               | views::transform([](int x) { return x * x; });
+  return accumulate(squares, 0);
 }
 
-static void ranges_common(benchmark::State &state) {
-  // Code before the loop is not measured
-  for (auto _ : state) {
-    int total = ranges_impl(state.range(0));
-
-    // Make sure the variable is not optimized away by compiler
-    benchmark::DoNotOptimize(total);
-  }
-}
-BENCHMARK(ranges_common)->Range(8 << 4, 8 << 16);
+DO_BENCHMARK(ranges_pipeline)
 
 BENCHMARK_MAIN();

@@ -251,12 +251,13 @@ TEST_CASE("find_if_not") {
 }
 
 TEST_CASE("for_each") {
-  int sum  = 0;
-  auto fun = [&](int i) { sum += i; };
   std::vector<int> v1{0, 2, 4, 6};
-  auto &&[i, f] = for_each(v1, fun);
+  int sum  = 0;
+  auto &&[i, f] = for_each(v1, [&](int i) { sum += i; });
+  REQUIRE(sum == 12);
   REQUIRE(i == v1.end());
-  REQUIRE((f(1), sum) == 13);
+  f(1);
+  REQUIRE(sum == 13);
 }
 
 TEST_CASE("generate") {
