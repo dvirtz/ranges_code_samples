@@ -16,7 +16,7 @@ using namespace ranges;
 TEST_CASE("pipe") {
   auto read_data = []()->std::vector<int> { return {}; };
 
-  extern std::vector<int> read_data();
+  // extern std::vector<int> read_data();
 
   auto vi = read_data()
           | actions::sort
