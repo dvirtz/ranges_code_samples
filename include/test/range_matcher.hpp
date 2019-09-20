@@ -6,6 +6,7 @@
 #include <experimental/ranges/ranges>
 #endif
 #include <utility/view.hpp>
+#include <concepts/concepts.hpp>
 
 namespace Catch {
 template <typename T> struct StringMaker<ranges::ref_view<T>> {
@@ -24,8 +25,9 @@ public:
     return match_impl(lhs);
   }
 
-  template<ranges::range R>
-  bool match_impl(R lhs) const {
+  
+  template<typename R>
+  bool CPP_fun(match_impl)(R lhs)(const requires ranges::range<R>) {
     using namespace ranges;
     using namespace std::string_literals;
     using Catch::Detail::stringify;
@@ -44,21 +46,22 @@ public:
     return true;
   }
 
-  template<ranges::range R> requires (!std::is_array<R>::value)
-  bool match_impl(const ranges::ref_view<R> &r) const {
+  template<typename R>
+  bool CPP_fun(match_impl)(const ranges::ref_view<R> &r)(const 
+    requires ranges::range<R> && (!std::is_array<R>::value)) {
     return match_impl(r.base());
   }
 
   template <typename L = LHS>
-  auto mismatch(L &&lhs) const 
-    requires std::is_floating_point_v<ranges::range_value_t<L>> {
+  auto CPP_fun(mismatch)(L &&lhs)( const 
+    requires std::is_floating_point_v<ranges::range_value_t<L>>) {
     return ranges::mismatch(std::forward<L>(lhs), m_rhs,
                             [](auto l, auto r) { return l == Approx(r); });
   }
 
   template <typename L = LHS>
-  auto mismatch(L &&lhs)
-    const requires !std::is_floating_point_v<ranges::range_value_t<L>> {
+  auto CPP_fun(mismatch)(L &&lhs)(const 
+    requires !std::is_floating_point_v<ranges::range_value_t<L>>) {
     return ranges::mismatch(std::forward<L>(lhs), m_rhs);
   }
 
@@ -79,8 +82,9 @@ template <typename LHS, typename RHS> RangeMatcher<LHS, RHS> Equals(RHS &&rhs) {
   return {std::forward<RHS>(rhs)};
 }
 
-template <ranges::forward_range LHS, ranges::forward_range RHS>
-void check_equal(LHS &&lhs, RHS &&rhs, bool /*force_call*/ = false) {
+template <typename LHS, typename RHS>
+void CPP_fun(check_equal)(LHS &&lhs, RHS &&rhs, bool /*force_call*/ = false)(
+  requires ranges::forward_range<LHS> && ranges::forward_range<RHS>) {
   // intentionally not forwarding lhs to enforce it being an lvalue reference
 #ifdef USE_RANGE_V3
   REQUIRE_THAT(ranges::views::ref(lhs),
@@ -92,8 +96,8 @@ void check_equal(LHS &&lhs, RHS &&rhs, bool /*force_call*/ = false) {
 }
 
 template <typename LHS, typename RHS>
-void check_equal(LHS &&lhs, RHS &&rhs, bool /*force_call*/ = false)
-  requires !ranges::forward_range<LHS> || !ranges::forward_range<RHS> {
+void CPP_fun(check_equal)(LHS &&lhs, RHS &&rhs, bool /*force_call*/ = false)(
+  requires !ranges::forward_range<LHS> || !ranges::forward_range<RHS>) {
   using namespace ranges;
   REQUIRE_THAT(to_vector(std::forward<LHS>(lhs)),
                Equals<decltype(to_vector(std::forward<LHS>(lhs)))>(rhs));

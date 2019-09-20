@@ -5,7 +5,8 @@
 #include <fstream>
 #include <iostream>
 
-template <ranges::range Rng> auto count_lines_in_files(Rng &&files) {
+template <typename Rng> auto CPP_fun(count_lines_in_files)(Rng &&files)(
+  requires ranges::range<Rng>) {
   auto open_file = [](const std::string &filename) {
     return std::ifstream(filename);
   };
@@ -30,7 +31,8 @@ static void rangify(benchmark::State &state) {
 }
 BENCHMARK(rangify)->Range(8, 8 << 11);
 
-template <ranges::range Rng> auto count_lines_in_files_2(Rng &&files) {
+template <typename Rng> auto CPP_fun(count_lines_in_files_2)(Rng &&files)(
+  requires ranges::range<Rng>) {
   std::vector<int> results;
   char c = 0;
 

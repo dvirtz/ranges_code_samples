@@ -29,10 +29,10 @@ TEST_CASE("adjacent_remove_if") {
 TEST_CASE("any_view") {
     any_view<int, category::forward> any;
     REQUIRE(empty(any));
-    any = view::iota(0, 4);
-    any = view::single(42);
+    any = views::iota(0, 4);
+    any = views::single(42);
     check_equal(any, {42});
-    // any = view::generate_n([](){ return 42; }, 4); does not compile
+    // any = views::generate_n([](){ return 42; }, 4); does not compile
 }
 
 TEST_CASE("c_str") {
@@ -94,7 +94,7 @@ TEST_CASE("const_") {
 
 TEST_CASE("cycle") {
   const int rng[] = {0, 1, 2};
-  check_equal(view::take(views::cycle(rng), 10), {0, 1, 2, 0, 1, 2, 0, 1, 2, 0});
+  check_equal(views::take(views::cycle(rng), 10), {0, 1, 2, 0, 1, 2, 0, 1, 2, 0});
 }
 
 TEST_CASE("delimit") {
@@ -321,7 +321,7 @@ TEST_CASE("set_views") {
   }
 
   SECTION("set_symmetric_difference") {
-    check_equal(view::take(views::set_symmetric_difference(multiples_of_3, squares), 6), {1, 3, 4, 6, 12, 15});
+    check_equal(views::take(views::set_symmetric_difference(multiples_of_3, squares), 6), {1, 3, 4, 6, 12, 15});
   }
 }
 
@@ -446,7 +446,7 @@ TEST_CASE("tokenize") {
 
   SECTION("1") {
     auto str = "abc\ndef\tghi klm"s; 
-    check_equal(view::tokenize(str, std::regex{"([a-z]+)"}, 1), 
+    check_equal(views::tokenize(str, std::regex{"([a-z]+)"}, 1), 
     {"abc"s, "def"s, "ghi"s, "klm"s});
   }
 

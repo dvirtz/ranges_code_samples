@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
-project(RangeAlgorithmsTalk)
+
+project(
+  RangeAlgorithmsTalk 
+  LANGUAGES CXX
+)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
@@ -34,15 +38,16 @@ conan_cmake_run(REQUIRES
                   Catch2/2.9.2@catchorg/stable
                   google_benchmark/1.5.0@onebaseroach/stable
                   cmcstl2/2019.08.07@mpusz/stable
-                # GENERATORS cmake_find_package
-                BASIC_SETUP CMAKE_TARGETS
+                GENERATORS cmake_paths
                 BUILD missing
                 SETTINGS compiler.cppstd=${CMAKE_CXX_STANDARD})
 
-# find_package(range-v3 CONFIG REQUIRED)
+include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
+
+find_package(range-v3 CONFIG REQUIRED)
 find_package(Catch2 CONFIG REQUIRED)
 find_package(benchmark CONFIG REQUIRED)
-# find_package(cmcstl2 CONFIG REQUIRED)
+find_package(cmcstl2 CONFIG REQUIRED)
 
 option(RUN_TESTS_POSTBUILD OFF)
 

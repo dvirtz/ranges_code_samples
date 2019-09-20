@@ -257,7 +257,7 @@ TEST_CASE("stable_sort") {
     const auto toupper = [](char c) {
       return static_cast<char>(std::toupper(c));
     };
-    return lexicographical_compare(s1, s2, ordered_less{}, toupper, toupper);
+    return lexicographical_compare(s1, s2, less{}, toupper, toupper);
   };
 
   actions::stable_sort(rng, caseInsensitiveCompare);

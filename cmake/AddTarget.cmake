@@ -1,11 +1,14 @@
 include(CTest)
 
 function(add_range_target name rangeLib)
+  if (rangeLib STREQUAL stl2 AND CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+    return()
+  endif()
   add_executable(${name} ${ARGN})
-  target_link_libraries(${name} CONAN_PKG::${rangeLib})
+  target_link_libraries(${name} ${rangeLib})
   target_include_directories(${name} PRIVATE ${CMAKE_SOURCE_DIR}/include)
   target_compile_definitions(${name} PRIVATE $<IF:$<STREQUAL:${rangeLib},range-v3>,USE_RANGE_V3,USE_STL2>)
-  target_compile_options(${name} PRIVATE "-fconcepts")
+  # target_compile_options(${name} PRIVATE "-fconcepts")
 endfunction()
 
 function(add_ranges_test name)
@@ -15,9 +18,11 @@ function(add_ranges_test name)
 
   add_range_target(${name} ${ARGN})
 
-  target_link_libraries(${name} CONAN_PKG::Catch2)
+  if(NOT TARGET ${name})
+    return()
+  endif()
 
-  message("CMAKE_MODULE_PATH = ${CMAKE_MODULE_PATH}")
+  target_link_libraries(${name} Catch2::Catch2)
       
   include(Catch)
     catch_discover_tests(${name}
