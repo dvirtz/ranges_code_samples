@@ -7,3 +7,5 @@ Code samples, examples and benchmarks for the following ranges libraries:
 Uses the following additional dependencies:
 * [Catch2](https://github.com/catchorg/Catch2)
 * [Google Benchmark](https://github.com/google/benchmark)
+
+CppCon 2019 presentation slides are available at [presentation/ranges_cppcon.pdf](presentation/ranges_cppcon.pdf)
