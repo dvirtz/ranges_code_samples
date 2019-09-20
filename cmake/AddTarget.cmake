@@ -2,7 +2,7 @@ include(CTest)
 
 function(add_range_target name rangeLib)
   add_executable(${name} ${ARGN})
-  target_link_libraries(${name} ${rangeLib})
+  target_link_libraries(${name} CONAN_PKG::${rangeLib})
   target_include_directories(${name} PRIVATE ${CMAKE_SOURCE_DIR}/include)
   target_compile_definitions(${name} PRIVATE $<IF:$<STREQUAL:${rangeLib},range-v3>,USE_RANGE_V3,USE_STL2>)
   target_compile_options(${name} PRIVATE "-fconcepts")
@@ -15,7 +15,9 @@ function(add_ranges_test name)
 
   add_range_target(${name} ${ARGN})
 
-  target_link_libraries(${name} Catch2::Catch2)
+  target_link_libraries(${name} CONAN_PKG::Catch2)
+
+  message("CMAKE_MODULE_PATH = ${CMAKE_MODULE_PATH}")
       
   include(Catch)
     catch_discover_tests(${name}

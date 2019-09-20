@@ -12,8 +12,10 @@ endif()
 
 include(${CMAKE_BINARY_DIR}/conan.cmake)
 
-set(ENV{CONAN_CMAKE_TOOLCHAIN_FILE} ${CMAKE_TOOLCHAIN_FILE})
-set(ENV{CONAN_CMAKE_GENERATOR} ${CMAKE_GENERATOR})
+if(DEFINED CMAKE_TOOLCHAIN_FILE)
+  set(ENV{CONAN_CMAKE_TOOLCHAIN_FILE} ${CMAKE_TOOLCHAIN_FILE})
+  set(ENV{CONAN_CMAKE_GENERATOR} ${CMAKE_GENERATOR})
+endif()
 
 # has no effect currently
 # https://github.com/conan-io/cmake-conan/issues/176
@@ -32,14 +34,15 @@ conan_cmake_run(REQUIRES
                   Catch2/2.9.2@catchorg/stable
                   google_benchmark/1.5.0@onebaseroach/stable
                   cmcstl2/2019.08.07@mpusz/stable
+                # GENERATORS cmake_find_package
                 BASIC_SETUP CMAKE_TARGETS
                 BUILD missing
                 SETTINGS compiler.cppstd=${CMAKE_CXX_STANDARD})
 
-find_package(range-v3 CONFIG REQUIRED)
+# find_package(range-v3 CONFIG REQUIRED)
 find_package(Catch2 CONFIG REQUIRED)
 find_package(benchmark CONFIG REQUIRED)
-find_package(cmcstl2 CONFIG REQUIRED)
+# find_package(cmcstl2 CONFIG REQUIRED)
 
 option(RUN_TESTS_POSTBUILD OFF)
 
