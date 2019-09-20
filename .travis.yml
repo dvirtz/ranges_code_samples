@@ -34,6 +34,7 @@ matrix:
         apt:
           packages:
             - clang-6.0
+            - ninja-build
           sources:
             - llvm-toolchain-xenial-6.0
             - sourceline: 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-5.0 main'
