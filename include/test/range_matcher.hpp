@@ -1,12 +1,13 @@
 #include <catch2/catch.hpp>
 #ifdef USE_RANGE_V3
 #include <range/v3/algorithm/mismatch.hpp>
+#include <range/v3/view/common.hpp>
+#include <range/v3/view/ref.hpp>
 #else
 #include <experimental/ranges/algorithm>
 #include <experimental/ranges/ranges>
 #endif
-#include <utility/view.hpp>
-#include <concepts/concepts.hpp>
+#include <utility/missing_utilities.hpp>
 
 namespace Catch {
 template <typename T> struct StringMaker<ranges::ref_view<T>> {

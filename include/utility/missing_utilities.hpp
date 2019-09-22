@@ -1,22 +1,29 @@
 #pragma once
 
-#ifdef USE_RANGE_V3
-#include <range/v3/to_container.hpp>
-#include <range/v3/view/bounded.hpp>
-#include <range/v3/view/c_str.hpp>
-#include <range/v3/view/zip.hpp>
-#else
-#include <experimental/ranges/algorithm>
-#include <experimental/ranges/ranges>
-#endif
-#include <vector>
+#ifndef USE_RANGE_V3
+////////////////////////////////////////////////////////////////////////////////
+// CPP_fun
+// Usage:
+//   template <typename A, typename B>
+//   void CPP_fun(foo)(A a, B b)([const]opt [noexcept(true)]opt
+//       requires Concept1<A> && Concept2<B>)
+//   {}
+//
+// Note: This macro cannot be used when the last function argument is a
+//       parameter pack.
+#define CPP_PP_EXPAND(...) __VA_ARGS__
+#define CPP_FUN_IMPL_1_(...) (__VA_ARGS__) CPP_PP_EXPAND /**/
+#define CPP_fun(X) X CPP_FUN_IMPL_1_
 
 #ifdef USE_STL2
+#include <experimental/ranges/algorithm>
+#include <experimental/ranges/ranges>
+#include <vector>
+
 namespace ranges = std::experimental::ranges;
 
 STL2_OPEN_NAMESPACE {
-  template<range R>
-  using range_value_t = ext::range_value_t<R>;
+  template <range R> using range_value_t = ext::range_value_t<R>;
 
   inline constexpr auto to_vector = [](auto &&rng) {
     using Cont  = std::vector<range_value_t<decltype(rng)>>;
@@ -32,18 +39,18 @@ STL2_OPEN_NAMESPACE {
     template <typename T> T &&operator()(T &&t) const noexcept {
       return static_cast<T &&>(t);
     }
-    
+
     template <typename T>
     typename reference_wrapper<T>::reference
       operator()(reference_wrapper<T> t) const noexcept {
       return t.get();
     }
-    
+
     template <typename T>
     T &operator()(std::reference_wrapper<T> t) const noexcept {
       return t.get();
     }
-    
+
     template <typename T> T &operator()(ref_view<T> t) const noexcept {
       return t.base();
     }
@@ -64,12 +71,12 @@ STL2_OPEN_NAMESPACE {
   inline constexpr detail::c_str_fn c_str;
 
   inline constexpr auto zip = [](auto &&rng1, auto &&rng2) {
-    std::vector<std::pair<range_value_t<decltype(rng1)>,
-                          range_value_t<decltype(rng2)>>>
+    std::vector<
+      std::pair<range_value_t<decltype(rng1)>, range_value_t<decltype(rng2)>>>
       v;
     ranges::transform(std::forward<decltype(rng1)>(rng1),
-                      std::forward<decltype(rng2)>(rng2),
-                      back_inserter(v), [](auto &&val1, auto &&val2) {
+                      std::forward<decltype(rng2)>(rng2), back_inserter(v),
+                      [](auto &&val1, auto &&val2) {
                         return std::pair{std::forward<decltype(val1)>(val1),
                                          std::forward<decltype(val2)>(val2)};
                       });
@@ -82,4 +89,6 @@ STL2_OPEN_NAMESPACE {
 }
 STL2_CLOSE_NAMESPACE
 
-#endif
+#endif // USE_STL2
+
+#endif // USE_RANGE_V3

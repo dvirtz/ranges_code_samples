@@ -34,9 +34,11 @@ matrix:
         apt:
           packages:
             - clang-6.0
+            - libstdc++-6-dev
             - ninja-build
           sources:
             - llvm-toolchain-xenial-6.0
+            - ubuntu-toolchain-r-test
             - sourceline: 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-5.0 main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 

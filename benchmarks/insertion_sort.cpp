@@ -2,7 +2,7 @@
 #include <benchmark/benchmark.h>
 #include <list>
 #include <random>
-#include <utility/view.hpp>
+#include <utility/missing_utilities.hpp>
 #ifdef USE_RANGE_V3
 #include <range/v3/view/counted.hpp>
 #else
