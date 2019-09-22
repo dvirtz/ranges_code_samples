@@ -34,7 +34,7 @@ matrix:
         apt:
           packages:
             - clang-6.0
-            - libstdc++-6-dev
+            - libstdc++-8-dev
             - ninja-build
           sources:
             - llvm-toolchain-xenial-6.0
