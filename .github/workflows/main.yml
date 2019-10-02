@@ -1,0 +1,13 @@
+name: ranges_code_samples workflow
+on: [push, pull_request]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        image: [gcc8]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: run docker
+        run: docker run --rm -v `pwd`:/home/conan/repo conanio/${{ matrix.image }} /home/conan/repo/.github/workflows/build.sh
