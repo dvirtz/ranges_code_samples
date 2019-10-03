@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/dvirtz/ranges_code_samples.svg?branch=master)](https://travis-ci.org/dvirtz/ranges_code_samples)c
+![](https://github.com/dvirtz/ranges_code_samples/workflows/ranges_code_samples%20workflow/badge.svg)
 
 Code samples, examples and benchmarks for the following ranges libraries:
 * [range-v3](https://github.com/ericniebler/range-v3) by Eric Niebler
