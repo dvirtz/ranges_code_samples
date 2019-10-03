@@ -1,4 +1,4 @@
-![](https://github.com/dvirtz/ranges_code_samples/workflows/ranges_code_samples%20workflow/badge.svg)
+[![Build Status](https://github.com/dvirtz/ranges_code_samples/workflows/ranges_code_samples%20workflow/badge.svg)](https://github.com/dvirtz/ranges_code_samples/actions)
 
 Code samples, examples and benchmarks for the following ranges libraries:
 * [range-v3](https://github.com/ericniebler/range-v3) by Eric Niebler
