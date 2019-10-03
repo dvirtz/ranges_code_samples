@@ -6,8 +6,9 @@ jobs:
     strategy:
       matrix:
         image: [gcc8]
+        build_type: [Debug, Release]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
       - name: run docker
-        run: docker run --rm -v `pwd`:/home/conan/repo conanio/${{ matrix.image }} /home/conan/repo/.github/workflows/build.sh
+        run: docker run --rm -v `pwd`:/home/conan/repo --env BUILD_TYPE=${{ matrix.build_type }} conanio/${{ matrix.image }} /home/conan/repo/.github/workflows/build.sh
