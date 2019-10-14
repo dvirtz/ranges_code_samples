@@ -234,14 +234,14 @@ TEST_CASE("split_when") {
 
   SECTION("by predicate") {
     auto&& res = actions::split_when(
-      rng, [loc = std::locale{}](char c) { return std::ispunct(c, loc); });
+      rng, [](char c) { return std::ispunct(c); });
     check_equal(res, {"One Proposal to ranges"s, "merge them all"s,
                      " One Proposal to ranges"s, "find them"s});
   }
 
   SECTION("by function") {
-    auto&& res = actions::split_when(rng, [loc = std::locale{}](auto current, auto) {
-      return std::pair{std::isupper(*current, loc), next(current)};
+    auto&& res = actions::split_when(rng, [](auto current, auto) {
+      return std::pair{std::isupper(*current), next(current)};
     });
     check_equal(res, {""s, "ne "s, "roposal to ranges::merge them all, "s,
                      "ne "s, "roposal to ranges::find them"s});

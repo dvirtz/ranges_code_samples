@@ -1,6 +1,15 @@
 #pragma once
 
-#ifndef USE_RANGE_V3
+#ifdef USE_RANGE_V3
+#include <range/v3/view/c_str.hpp>
+
+#ifdef _MSC_VER
+namespace ranges::detail {
+template <> struct is_char_type_<char8_t> : std::true_type {};
+} // namespace ranges::detail
+#endif // _MSC_VER
+
+#else
 ////////////////////////////////////////////////////////////////////////////////
 // CPP_fun
 // Usage:
@@ -92,3 +101,7 @@ STL2_CLOSE_NAMESPACE
 #endif // USE_STL2
 
 #endif // USE_RANGE_V3
+
+namespace fmt {
+  
+}

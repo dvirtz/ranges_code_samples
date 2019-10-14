@@ -13,7 +13,7 @@ namespace ranges = std::experimental::ranges;
 template <typename F> static auto do_benchmark(benchmark::State &state, F &&f) {
   // Code inside this loop is measured repeatedly
   for (auto _ : state) {
-    int total = std::forward<F>(f)(state.range(0));
+    const auto total = std::forward<F>(f)(static_cast<int>(state.range(0)));
 
     // Make sure the variable is not optimized away by compiler
     benchmark::DoNotOptimize(total);
