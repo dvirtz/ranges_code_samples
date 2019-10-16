@@ -2,13 +2,24 @@ name: ranges_code_samples workflow
 on: [push, pull_request]
 
 jobs:
-  build:
+  ubuntu:
     strategy:
       matrix:
         image: [gcc8]
         build_type: [Debug, Release]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@master
       - name: run docker
-        run: docker run --rm -v `pwd`:/home/conan/repo --env BUILD_TYPE=${{ matrix.build_type }} conanio/${{ matrix.image }} /home/conan/repo/.github/workflows/build.sh
+        run: docker run --rm -v `pwd`:/home/conan/repo --env BUILD_TYPE=${{ matrix.build_type }} conanio/${{ matrix.image }} /home/conan/repo/ci/build.sh
+  windows:
+    strategy:
+      matrix:
+        build_type: [Debug, Release]
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@master
+      - name: build docker
+        run: docker image build -f Dockerfile.win -t windows-2019 %cd%/ci
+      - name: run docker
+        run: docker run --rm -v %cd%:/home/conan/repo --env BUILD_TYPE=${{ matrix.build_type }} windows-2019 /home/conan/repo/ci/build.bat
