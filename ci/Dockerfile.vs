@@ -14,7 +14,7 @@ RUN iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.or
     choco install --no-progress --yes cmake --version=3.15.4 --params '"/InstallDir:C:\tools\cmake"' --installargs 'ADD_CMAKE_TO_PATH=""System""'; \
     choco install --no-progress --yes python3 --version=3.7.0 --params '"/InstallDir:C:\tools\python3"'
 
-RUN choco install --no-progress --yes visualstudio2019buildtools --version=16.3.2.0
+RUN choco install --no-progress --yes visualstudio2019buildtools --version=16.3.2.0 --ignore-checksums
 RUN choco install --no-progress --yes visualstudio2019-workload-vctools --version=1.0.0
 RUN choco install --no-progress --yes --execution-timeout=0 visualstudio2019-workload-manageddesktop --version=1.0.1
 
