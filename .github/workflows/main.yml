@@ -1,5 +1,5 @@
 name: ranges_code_samples workflow
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   ubuntu:
@@ -11,15 +11,15 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: run docker
-        run: docker run --rm -v `pwd`:/home/conan/repo --env BUILD_TYPE=${{ matrix.build_type }} conanio/${{ matrix.image }} /home/conan/repo/ci/build.sh
+        run: docker run --rm -v $GITHUB_WORKSPACE:/home/conan/repo --env BUILD_TYPE=${{ matrix.build_type }} conanio/${{ matrix.image }} /home/conan/repo/ci/build.sh
   windows:
     strategy:
       matrix:
         build_type: [Debug, Release]
-    runs-on: windows-2019
+    runs-on: windows-2016
     steps:
       - uses: actions/checkout@master
       - name: build docker
-        run: docker image build -f Dockerfile.win -t windows-2019 %cd%/ci
+        run: docker image build -f ci\\Dockerfile.vs -t msvc_16 .
       - name: run docker
-        run: docker run --rm -v %cd%:/home/conan/repo --env BUILD_TYPE=${{ matrix.build_type }} windows-2019 /home/conan/repo/ci/build.bat
+        run: docker run --rm -v %GITHUB_WORKSPACE%:C:\\Users\\ContainerAdministrato\\repo --env BUILD_TYPE=${{ matrix.build_type }} msvc_16 C:\\Users\\ContainerAdministrato\\repo\\ci\\build.bat
