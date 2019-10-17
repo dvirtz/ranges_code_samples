@@ -1,4 +1,4 @@
-FROM microsoft/windowsservercore:ltsc2016
+FROM mcr.microsoft.com/windows/servercore:ltsc2019
 
 LABEL maintainer="Luis Martinez de Bartolome <luism@jfrog.com>"
 
