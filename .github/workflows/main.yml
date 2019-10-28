@@ -20,6 +20,6 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: build docker
-        run: docker image build -f ci\\Dockerfile.vs -t msvc_16 .
+        run: docker build -f ci\\Dockerfile.vs -t msvc_16 .
       - name: run docker
-        run: docker run --rm -v %GITHUB_WORKSPACE%:C:\\Users\\ContainerAdministrato\\repo --env BUILD_TYPE=${{ matrix.build_type }} msvc_16 C:\\Users\\ContainerAdministrato\\repo\\ci\\build.bat
+        run: docker run --rm -v %GITHUB_WORKSPACE%:C:\Users\ContainerAdministrator\repo --env BUILD_TYPE=${{ matrix.build_type }} msvc_16 C:\\Users\\ContainerAdministrator\\repo\\ci\\build.bat
