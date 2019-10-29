@@ -3,6 +3,8 @@
 #include <range/v3/algorithm/all_of.hpp>
 #include <range/v3/core.hpp>
 #include <range/v3/view.hpp>
+#elif defined USE_NANORANGE
+#include <nanorange.hpp>
 #endif
 #include <catch2/catch.hpp>
 #include <locale>
@@ -22,8 +24,11 @@ TEST_CASE("all") {
 }
 
 TEST_CASE("commmon") {
-  auto &&res = views::common(views::iota(0, 4));
-  REQUIRE(std::equal(res.begin(), res.end(), begin(views::iota(0, 4))));
+  auto &&rng = views::iota(0, unreachable_sentinel) | views::take(4);
+  static_assert(!common_range<decltype(rng)>);
+  auto &&res = views::common(rng);
+  static_assert(common_range<decltype(res)>);
+  REQUIRE(std::equal(res.begin(), res.end(), begin(rng)));
 }
 
 TEST_CASE("counted") {
@@ -57,18 +62,19 @@ TEST_CASE("filter") {
               {0, 2, 4, 6, 8, 10});
 }
 
+#if !defined(USE_STL2) && !defined(USE_NANORANGE)
 TEST_CASE("generate") {
-#ifdef USE_RANGE_V3
   // https://github.com/CaseyCarter/cmcstl2/issues/276
   auto &&res = views::generate([i = 0]() mutable { return i++; });
   check_equal(res | views::take(5), {0, 1, 2, 3, 4});
-#endif
 }
+#endif
 
+#ifndef USE_NANORANGE
 TEST_CASE("indirect") {
   SECTION("RAW pointers") {
     const int arr[] = {0, 1, 2, 3, 4};
-    auto &&rng = views::iota(arr, arr + 5);
+    auto &&rng      = views::iota(arr, arr + 5);
     check_equal(views::indirect(rng), arr);
   }
 
@@ -81,23 +87,22 @@ TEST_CASE("indirect") {
     check_equal(res, {0, 1, 2, 3, 4});
   }
 }
+#endif
 
 TEST_CASE("iota") {
-  SECTION("numeric") {
-    check_equal(views::iota(42, 45), {42, 43, 44});
-  }
+  SECTION("numeric") { check_equal(views::iota(42, 45), {42, 43, 44}); }
 
   SECTION("non numeric") {
     const auto str = views::c_str("Hello Core C++");
     SECTION("lower and upper bounds") {
       auto &&res = views::iota(begin(str), end(str));
-      check_equal(res | views::indirect, {'H', 'e', 'l', 'l', 'o', ' ', 'C',
-                                          'o', 'r', 'e', ' ', 'C', '+', '+'});
+      check_equal(views::indirect(res), {'H', 'e', 'l', 'l', 'o', ' ', 'C', 'o',
+                                         'r', 'e', ' ', 'C', '+', '+'});
     }
 
     SECTION("lower bound only") {
       auto &&res = views::iota(begin(str));
-      check_equal(res | views::indirect | views::take(10),
+      check_equal(views::indirect(res) | views::take(10),
                   {'H', 'e', 'l', 'l', 'o', ' ', 'C', 'o', 'r', 'e'});
     }
   }
@@ -106,7 +111,11 @@ TEST_CASE("iota") {
 TEST_CASE("istream_range") {
   using namespace views;
   std::istringstream sst{"1 2 3 4 5 6"};
+#ifdef USE_NANORANGE
+  check_equal(istream_view<int>(sst), {1, 2, 3, 4, 5, 6});
+#else
   check_equal(istream<int>(sst), {1, 2, 3, 4, 5, 6});
+#endif
 }
 
 TEST_CASE("join") {
@@ -114,27 +123,28 @@ TEST_CASE("join") {
   check_equal(views::join(rng), {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
 }
 
+#ifndef USE_NANORANGE
 TEST_CASE("move") {
   std::vector<std::vector<int>> source{{0, 1, 2}, {3, 4, 5, 6}, {7, 8, 9}};
   std::vector<std::vector<int>> dest{3};
   copy(views::move(source), begin(dest));
-  check_equal(dest, std::vector<std::vector<int>>{{0, 1, 2}, {3, 4, 5, 6}, {7, 8, 9}});
+  check_equal(
+    dest, std::vector<std::vector<int>>{{0, 1, 2}, {3, 4, 5, 6}, {7, 8, 9}});
   check_equal(source, std::vector<std::vector<int>>{3});
 }
+#endif
 
+#if !defined(USE_STL2) && !defined(USE_NANORANGE)
 TEST_CASE("repeat") {
-#ifdef USE_RANGE_V3
   // https://github.com/CaseyCarter/cmcstl2/issues/276
   check_equal(views::repeat(42) | views::take(6), {42, 42, 42, 42, 42, 42});
-#endif
 }
 
 TEST_CASE("repeat_n") {
-#ifdef USE_RANGE_V3
   // https://github.com/CaseyCarter/cmcstl2/issues/276
   check_equal(views::repeat_n(42, 6), {42, 42, 42, 42, 42, 42});
-#endif
 }
+#endif
 
 TEST_CASE("reverse") {
   const int rng[] = {0, 1, 2, 3, 4, 5, 6};
@@ -216,6 +226,7 @@ TEST_CASE("take") {
   SECTION("length > range size") { check_equal(views::take(rng, 12), rng); }
 }
 
+#ifndef USE_NANORANGE
 TEST_CASE("take_exactly") {
   const int rng[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
@@ -228,6 +239,7 @@ TEST_CASE("take_exactly") {
     REQUIRE(size(views::take_exactly(rng, 12)) == 12);
   }
 }
+#endif
 
 TEST_CASE("take_while") {
   const int rng[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
@@ -239,6 +251,7 @@ TEST_CASE("transform") {
   SECTION("unary") {
     using namespace std::string_literals;
     const int rng[] = {0, 1, 2, 3, 4, 5};
-    check_equal(views::transform(rng, [](int i) { return std::to_string(i); }), {"0"s, "1"s, "2"s, "3"s, "4"s, "5"s});
+    check_equal(views::transform(rng, [](int i) { return std::to_string(i); }),
+                {"0"s, "1"s, "2"s, "3"s, "4"s, "5"s});
   }
 }

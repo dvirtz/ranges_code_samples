@@ -3,6 +3,9 @@
 #ifdef USE_RANGE_V3
 #include <range/v3/algorithm.hpp>
 #include <range/v3/view/transform.hpp>
+#elif defined(USE_NANORANGE)
+#include <nanorange.hpp>
+namespace ranges = nano::ranges;
 #else
 #include <experimental/ranges/algorithm>
 #include <experimental/ranges/ranges>

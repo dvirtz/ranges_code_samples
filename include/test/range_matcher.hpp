@@ -3,6 +3,9 @@
 #include <range/v3/algorithm/mismatch.hpp>
 #include <range/v3/view/common.hpp>
 #include <range/v3/view/ref.hpp>
+#elif defined(USE_NANORANGE)
+#include <nanorange.hpp>
+namespace ranges = nano::ranges;
 #else
 #include <experimental/ranges/algorithm>
 #include <experimental/ranges/ranges>
@@ -22,12 +25,9 @@ class RangeMatcher : public Catch::MatcherBase<LHS> {
 public:
   RangeMatcher(RHS &&rhs) : m_rhs{std::forward<RHS>(rhs)} {}
 
-  bool match(const LHS &lhs) const override {
-    return match_impl(lhs);
-  }
+  bool match(const LHS &lhs) const override { return match_impl(lhs); }
 
-  
-  template<typename R>
+  template <typename R>
   bool CPP_fun(match_impl)(R lhs)(const requires ranges::range<R>) {
     using namespace ranges;
     using namespace std::string_literals;
@@ -47,22 +47,22 @@ public:
     return true;
   }
 
-  template<typename R>
-  bool CPP_fun(match_impl)(const ranges::ref_view<R> &r)(const 
-    requires ranges::range<R> && (!std::is_array<R>::value)) {
+  template <typename R>
+  bool CPP_fun(match_impl)(const ranges::ref_view<R> &r)(
+    const requires ranges::range<R> && (!std::is_array<R>::value)) {
     return match_impl(r.base());
   }
 
   template <typename L = LHS>
-  auto CPP_fun(mismatch)(L &&lhs)( const 
-    requires std::is_floating_point_v<ranges::range_value_t<L>>) {
+  auto CPP_fun(mismatch)(L &&lhs)(
+    const requires std::is_floating_point_v<ranges::range_value_t<L>>) {
     return ranges::mismatch(std::forward<L>(lhs), m_rhs,
                             [](auto l, auto r) { return l == Approx(r); });
   }
 
   template <typename L = LHS>
-  auto CPP_fun(mismatch)(L &&lhs)(const 
-    requires !std::is_floating_point_v<ranges::range_value_t<L>>) {
+  auto CPP_fun(mismatch)(L &&lhs)(
+    const requires !std::is_floating_point_v<ranges::range_value_t<L>>) {
     return ranges::mismatch(std::forward<L>(lhs), m_rhs);
   }
 
@@ -85,14 +85,15 @@ template <typename LHS, typename RHS> RangeMatcher<LHS, RHS> Equals(RHS &&rhs) {
 
 template <typename LHS, typename RHS>
 void CPP_fun(check_equal)(LHS &&lhs, RHS &&rhs, bool /*force_call*/ = false)(
-  requires ranges::forward_range<LHS> && ranges::forward_range<RHS>) {
+  requires ranges::forward_range<LHS> &&ranges::forward_range<RHS>) {
   // intentionally not forwarding lhs to enforce it being an lvalue reference
-#ifdef USE_RANGE_V3
-  REQUIRE_THAT(ranges::views::ref(lhs),
-               Equals<decltype(ranges::views::ref(lhs))>(std::forward<RHS>(rhs)));
+#ifdef USE_NANORANGE
+  REQUIRE_THAT(ranges::ref_view(lhs),
+               Equals<decltype(ranges::ref_view(lhs))>(std::forward<RHS>(rhs)));
 #else
-  REQUIRE_THAT(ranges::ref(lhs),
-               Equals<decltype(ranges::views::ref(lhs))>(std::forward<RHS>(rhs)));
+  REQUIRE_THAT(
+    ranges::views::ref(lhs),
+    Equals<decltype(ranges::views::ref(lhs))>(std::forward<RHS>(rhs)));
 #endif
 }
 

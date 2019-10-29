@@ -29,10 +29,16 @@ template <> struct is_char_type_<char8_t> : std::true_type {};
 #include <experimental/ranges/ranges>
 #include <vector>
 
-namespace ranges = std::experimental::ranges;
-
 STL2_OPEN_NAMESPACE {
+#else
+#include <nanorange.hpp>
+
+NANO_BEGIN_NAMESPACE
+#endif
+
+#ifdef USE_STL2
   template <range R> using range_value_t = ext::range_value_t<R>;
+#endif
 
   inline constexpr auto to_vector = [](auto &&rng) {
     using Cont  = std::vector<range_value_t<decltype(rng)>>;
@@ -40,32 +46,10 @@ STL2_OPEN_NAMESPACE {
     return Cont{begin(common), end(common)};
   };
 
-  template <view V> auto operator|(V &&v, decltype(to_vector) tv) {
+  template <typename V>
+  auto CPP_fun(operator|)(V && v, decltype(to_vector) tv)(requires view<V>) {
     return tv(std::forward<V>(v));
   }
-
-  struct unwrap_reference_fn {
-    template <typename T> T &&operator()(T &&t) const noexcept {
-      return static_cast<T &&>(t);
-    }
-
-    template <typename T>
-    typename reference_wrapper<T>::reference
-      operator()(reference_wrapper<T> t) const noexcept {
-      return t.get();
-    }
-
-    template <typename T>
-    T &operator()(std::reference_wrapper<T> t) const noexcept {
-      return t.get();
-    }
-
-    template <typename T> T &operator()(ref_view<T> t) const noexcept {
-      return t.base();
-    }
-  };
-
-  inline constexpr auto unwrap_reference = unwrap_reference_fn{};
 
   namespace views {
 
@@ -75,33 +59,50 @@ STL2_OPEN_NAMESPACE {
       return subrange{&sz[0], &sz[N - 1]};
     }
   };
+
   } // namespace detail
 
   inline constexpr detail::c_str_fn c_str;
+
+#ifdef USE_NANORANGE
+  inline constexpr auto indirect = [](auto &&rng) {
+    return transform(rng, [](auto &&p) { return *p; });
+  };
+#endif
 
   inline constexpr auto zip = [](auto &&rng1, auto &&rng2) {
     std::vector<
       std::pair<range_value_t<decltype(rng1)>, range_value_t<decltype(rng2)>>>
       v;
     ranges::transform(std::forward<decltype(rng1)>(rng1),
-                      std::forward<decltype(rng2)>(rng2), back_inserter(v),
-                      [](auto &&val1, auto &&val2) {
+                      std::forward<decltype(rng2)>(rng2),
+                      ranges::back_inserter(v), [](auto &&val1, auto &&val2) {
                         return std::pair{std::forward<decltype(val1)>(val1),
                                          std::forward<decltype(val2)>(val2)};
                       });
     return v;
   };
 
+#ifdef USE_STL2
   using namespace ext;
+#endif
 
   } // namespace views
+
+#ifdef USE_NANORANGE
+  template<typename V>
+  std::ostream& CPP_fun(operator<<)(std::ostream &ost, V v)(requires view<V>){
+    return ost;
+  }
+#endif
+
+#ifdef USE_STL2
 }
 STL2_CLOSE_NAMESPACE
-
+#else
+NANO_END_NAMESPACE
 #endif // USE_STL2
 
 #endif // USE_RANGE_V3
 
-namespace fmt {
-  
-}
+// namespace fmt {}
