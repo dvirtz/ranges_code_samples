@@ -8,18 +8,43 @@ jobs:
         image: [gcc8]
         build_type: [Debug, Release]
     runs-on: ubuntu-18.04
+    env: 
+      SOURCE_FOLDER: repo
     steps:
       - uses: actions/checkout@master
       - name: run docker
-        run: docker run --rm -v $GITHUB_WORKSPACE:/home/conan/repo --env BUILD_TYPE=${{ matrix.build_type }} conanio/${{ matrix.image }} /home/conan/repo/ci/build.sh
-  windows:
+        run: docker run --rm -v $GITHUB_WORKSPACE:/home/conan/$SOURCE_FOLDER --env BUILD_TYPE=${{ matrix.build_type }} --env SOURCE_FOLDER=$SOURCE_FOLDER conanio/${{ matrix.image }} /home/conan/$SOURCE_FOLDER/ci/build.sh
+        
+  # windows-docker:
+  #   strategy:
+  #     matrix:
+  #       build_type: [Debug, Release]
+  #   runs-on: windows-2019
+  #   env: 
+  #     SOURCE_FOLDER: repo
+  #   steps:
+  #     - uses: actions/checkout@master
+  #     - name: build docker
+  #       run: docker build -f ci\\Dockerfile.vs -t msvc_16 .
+  #     - name: run docker
+  #       run: docker run --rm -v %GITHUB_WORKSPACE%:C:\Users\ContainerAdministrator\%SOURCE_FOLDER% --env BUILD_TYPE=${{ matrix.build_type }} --env SOURCE_FOLDER=%SOURCE_FOLDER% msvc_16 C:\\Users\\ContainerAdministrator\\%SOURCE_FOLDER%\\ci\\build.bat
+
+  windows-native:
     strategy:
       matrix:
         build_type: [Debug, Release]
     runs-on: windows-2019
+    env: 
+      SOURCE_FOLDER: .
+      BUILD_TYPE: ${{ matrix.build_type }}
+      CC: cl.exe
+      CXX: cl.exe
     steps:
       - uses: actions/checkout@master
-      - name: build docker
-        run: docker build -f ci\\Dockerfile.vs -t msvc_16 .
-      - name: run docker
-        run: docker run --rm -v %GITHUB_WORKSPACE%:C:\Users\ContainerAdministrator\repo --env BUILD_TYPE=${{ matrix.build_type }} msvc_16 C:\\Users\\ContainerAdministrator\\repo\\ci\\build.bat
+      - name: install conan
+        run: pip install conan
+      - name: build
+        shell: cmd
+        run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          call ci\build.bat
