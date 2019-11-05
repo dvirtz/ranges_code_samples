@@ -3,3 +3,4 @@ _*/
 .history/
 .python-version
 .DS_Store
+build/

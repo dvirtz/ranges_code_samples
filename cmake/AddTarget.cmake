@@ -1,7 +1,7 @@
 include(CTest)
 
 function(add_range_target name rangeLib)
-  if (rangeLib STREQUAL stl2 AND CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+  if (rangeLib STREQUAL stl2 AND NOT TARGET stl2)
     return()
   endif()
   add_executable(${name} ${ARGN})

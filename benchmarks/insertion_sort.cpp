@@ -19,9 +19,9 @@ void CPP_fun(insertion_sort)(I begin, S end)(requires ranges::sentinel_for<S, I>
   }
 }
 
-auto createList(size_t N) {
+auto createList(int64_t N) {
   std::mt19937 gen;
-  std::uniform_int_distribution<> dis(0, N);
+  std::uniform_int_distribution<> dis(0, static_cast<int>(N));
   std::list<int> list;
   std::generate_n(std::back_inserter(list), N, [&]() { return dis(gen); });
   return list;

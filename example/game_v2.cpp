@@ -1,13 +1,22 @@
+#include "utility/missing_utilities.hpp"
 #include <iomanip>
 #include <iostream>
 #include <random>
 #include <range/v3/all.hpp>
 #include <set>
+#include <sstream>
 #include <string>
 #include <vector>
 
-using Suit = std::string;
-using Rank = std::string;
+#if __cpp_char8_t >= 201811L
+using char_t = char8_t;
+#else
+using char_t = char;
+#endif
+using string = std::basic_string<char_t>;
+
+using Suit = string;
+using Rank = string;
 
 using namespace ranges;
 
@@ -17,7 +26,8 @@ struct Card {
   Suit suit;
   Rank rank;
 
-  friend std::ostream &operator<<(std::ostream &ost, const Card &card) {
+  friend std::basic_ostream<char_t> &
+    operator<<(std::basic_ostream<char_t> &ost, const Card &card) {
     return ost << card.suit << std::left << std::setw(2) << card.rank;
   }
 };
@@ -31,15 +41,15 @@ struct Deck {
 
   /// Create a new deck of 52 cards
   static Cards createDeck(bool shuffle) {
-    static const auto SUITS = views::c_str(u8"♠ ♡ ♢ ♣") | views::split(u8' ');
+    static const auto SUITS = views::c_str(u8"♠ ♥ ♦ ♣") | views::split(u8' ');
     static const auto RANKS =
-      views::c_str(u8"2 3 4 5 6 7 8 9 10 J Q K A") | views::split(u8' ');
-    auto cards =
-      views::cartesian_product(SUITS, RANKS)
-      | views::transform([](const auto &tuple) {
-          return Card{std::get<0>(tuple) | to<Suit>, std::get<1>(tuple) | to<Rank>};
-        })
-      | to_vector;
+      views::c_str(u8"2 3 4 5 6 7 8 9 10 J Q K A") | views::split(u8' '); // '
+    auto cards = views::cartesian_product(SUITS, RANKS)
+                 | views::transform([](const auto &tuple) {
+                     auto &&[suit, rank] = tuple;
+                     return Card{suit | to<Suit>(), rank | to<Rank>()};
+                   })
+                 | to_vector;
     if (shuffle) {
       return actions::shuffle(cards, gen);
     }
@@ -48,8 +58,8 @@ struct Deck {
   }
 
   /// Deal the cards in the deck into a number of hands
-  auto deal(int numHands) const {
-    auto slice = [this](int from) {
+  auto deal(ptrdiff_t numHands) const {
+    auto slice = [this](ptrdiff_t from) {
       return cards | views::slice(from, end) | views::stride(4);
     };
     return views::indices(numHands) | views::transform(slice);
@@ -58,13 +68,14 @@ struct Deck {
 
 /// Choose and return a random item
 template <typename Rng>
-auto choose(Rng &&rng) -> CPP_ret(iterator_t<Rng>)(requires ranges::forward_range<Rng>) {
+auto choose(Rng &&rng)
+  -> CPP_ret(iterator_t<Rng>)(requires ranges::forward_range<Rng>) {
   auto sampled = views::iota(begin(rng), end(rng)) | views::sample(1, gen);
   return *sampled.begin();
 }
 
 struct Player {
-  std::string name;
+  string name;
   Cards hand;
 
   /// Play a card from the player's hand
@@ -72,35 +83,44 @@ struct Player {
     auto it   = choose(hand);
     auto card = *it;
     hand.erase(it);
-    std::cout << name << ": " << card << "  ";
+    std::basic_stringstream<char_t> sst;
+    sst << name << ": " << card << "  ";
+    const auto str = sst.str();
+    std::fwrite(str.data(), 1, str.size(), stdout);
     return card;
   }
 };
 
-struct Game {
+class Game {
+private:
   using Players = std::vector<Player>;
   Players players;
 
   template <typename Names>
-  Game(Names &&names) : players{createPlayers(std::forward<Names>(names))} {}
-
-  static Players createPlayers(any_view<const char *> names) {
-    auto defaultNames      = {"P1", "P2", "P3", "P4"};
+  static Players CPP_fun(createPlayers)(Names names)(
+    requires(view_<Names> && same_as<range_value_t<Names>, const char_t*>)) {
+    auto defaultNames = {u8"P1", u8"P2", u8"P3", u8"P4"};
     auto namesWithDefaults = views::concat(names, defaultNames)
                              | views::take_exactly(distance(defaultNames));
     return views::zip_with(
-      [](auto &&name, auto &&cards) {
-        return Player{name, cards | to<Cards>};
-      },
-      namesWithDefaults, Deck{true}.deal(distance(namesWithDefaults)))
-      | to<Players>;
+             [](auto &&name, auto &&cards) {
+               return Player{name, to<Cards>(cards)};
+             },
+             namesWithDefaults, Deck{true}.deal(distance(namesWithDefaults)))
+           | to<Players>();
   }
 
   /// Rotate player order so that start goes first
   auto playerOrder(Players::iterator startingPlayer) {
     return views::concat(subrange{startingPlayer, end(players)},
-                        subrange{begin(players), startingPlayer});
+                         subrange{begin(players), startingPlayer});
   }
+
+public:
+  CPP_template(typename Names)(
+    requires(view_<Names> && same_as<range_value_t<Names>, const char_t*>))
+    Game(Names names) :
+      players{createPlayers(names)} {}
 
   /// Play a card game
   void play() {
@@ -114,7 +134,7 @@ struct Game {
   }
 };
 
-int main(int argc, const char *argv[]) {
+int main(int argc, const char_t *argv[]) {
   // Read player names from command line
   auto playerNames = views::counted(argv, argc) | views::drop_exactly(1);
   Game game{playerNames};

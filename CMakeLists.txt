@@ -33,11 +33,23 @@ conan_add_remote(
 
 set(CMAKE_CXX_STANDARD 20)
 
-conan_cmake_run(REQUIRES 
-                  range-v3/0.9.0@ericniebler/stable
-                  Catch2/2.9.2@catchorg/stable
-                  google_benchmark/1.5.0@onebaseroach/stable
-                  cmcstl2/2019.08.07@mpusz/stable
+if(WIN32)
+  find_program(CONAN conan.bat)
+endif()
+
+set(DEPENDENCIES 
+      range-v3/0.9.0@ericniebler/stable
+      Catch2/2.9.2@catchorg/stable
+      google_benchmark/1.5.0@onebaseroach/stable
+)
+
+if((CMAKE_CXX_COMPILER_ID STREQUAL GCC) OR (CMAKE_CXX_COMPILER_ID STREQUAL Clang))
+  list(APPEND DEPENDENCIES 
+        cmcstl2/2019.08.07@mpusz/stable)
+endif()
+
+conan_cmake_run(REQUIRES ${DEPENDENCIES}
+                CONAN_COMMAND ${CONAN}
                 GENERATORS cmake_paths
                 BUILD missing
                 SETTINGS compiler.cppstd=${CMAKE_CXX_STANDARD})
@@ -47,7 +59,7 @@ include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
 find_package(range-v3 CONFIG REQUIRED)
 find_package(Catch2 CONFIG REQUIRED)
 find_package(benchmark CONFIG REQUIRED)
-find_package(cmcstl2 CONFIG REQUIRED)
+find_package(cmcstl2 CONFIG)
 
 option(RUN_TESTS_POSTBUILD OFF)
 

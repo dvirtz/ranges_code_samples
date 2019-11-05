@@ -5,7 +5,7 @@
 #include <range/v3/view.hpp>
 #include <map>
 #include <sstream>
-#include <range/v3/to_container.hpp>
+#include <range/v3/range/conversion.hpp>
 #include <range/v3/algorithm/is_sorted.hpp>
 #include <range/v3/functional/arithmetic.hpp>
 
@@ -500,14 +500,14 @@ TEST_CASE("zip_with") {
 TEST_CASE("to_container") {
   SECTION("vector") {
     auto vec = views::ints | views::transform([](int i) { return i + 42; })
-               | views::take(10) | to<std::vector>;
+               | views::take(10) | to<std::vector>();
     static_assert(std::is_same_v<decltype(vec), std::vector<int>>);
   }
 
   SECTION("map") {
     const std::string names[] = {"john", "paul", "george", "richard"};
     const int songs[]         = {72, 70, 22, 2};
-    auto map = views::zip(names, songs) | to<std::map<std::string, int>>;
+    auto map = views::zip(names, songs) | to<std::map<std::string, int>>();
     check_equal(map,
                std::initializer_list<std::pair<const std::string, int>>{
                  {"george", 22}, {"john", 72}, {"paul", 70}, {"richard", 2}});
