@@ -24,6 +24,10 @@ TEST_CASE("all") {
 }
 
 TEST_CASE("commmon") {
+  #ifdef USE_RANGE_V3
+  auto unreachable_sentinel = unreachable;
+  #endif
+  
   auto &&rng = views::iota(0, unreachable_sentinel) | views::take(4);
   static_assert(!common_range<decltype(rng)>);
   auto &&res = views::common(rng);

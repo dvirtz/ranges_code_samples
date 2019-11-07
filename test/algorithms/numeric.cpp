@@ -1,27 +1,9 @@
 #include <catch2/catch.hpp>
-#include <range/v3/algorithm.hpp>
-#include <range/v3/view.hpp>
 #include <range/v3/numeric.hpp>
+#include <range/v3/view.hpp>
 #include "test/range_matcher.hpp"
 
 using namespace ranges;
-
-TEST_CASE("for_each_n") {
-  int sum  = 0;
-  auto fun = [&](int i) { sum += i; };
-  std::vector<int> v1{0, 2, 4, 6};
-  auto i = for_each_n(begin(v1), 3, fun);
-  REQUIRE(i == v1.begin() + 3);
-  REQUIRE(sum == 6);
-}
-
-TEST_CASE("sample") {
-  const int rng[] = {0, 1, 2, 3, 4, 5};
-  int out[4];
-  sample(rng, out);
-  REQUIRE(is_sorted(out));
-  REQUIRE(includes(rng, out));
-}
 
 TEST_CASE("accumulate") {
   auto rng = views::indices(10);
