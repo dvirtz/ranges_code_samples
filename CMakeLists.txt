@@ -41,7 +41,7 @@ set(DEPENDENCIES
       range-v3/0.9.0@ericniebler/stable
       Catch2/2.9.2@catchorg/stable
       google_benchmark/1.5.0@onebaseroach/stable
-      nanorange/f48db7b7@tcbrindle/testing
+      nanorange/76f0c26e@tcbrindle/testing
 )
 
 if((CMAKE_CXX_COMPILER_ID STREQUAL GCC) OR (CMAKE_CXX_COMPILER_ID STREQUAL Clang))
