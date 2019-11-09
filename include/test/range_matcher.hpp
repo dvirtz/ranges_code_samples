@@ -1,4 +1,3 @@
-#include <catch2/catch.hpp>
 #ifdef USE_RANGE_V3
 #include <range/v3/algorithm/mismatch.hpp>
 #include <range/v3/view/common.hpp>
@@ -9,15 +8,40 @@ namespace ranges = nano::ranges;
 #else
 #include <experimental/ranges/algorithm>
 #include <experimental/ranges/ranges>
+namespace ranges = __stl2;
 #endif
 #include <utility/missing_utilities.hpp>
+#include <sstream>
+#include <catch2/catch.hpp>
 
 namespace Catch {
-template <typename T> struct StringMaker<ranges::ref_view<T>> {
-  static std::string convert(const ranges::ref_view<T> &view) {
-    return rangeToString(view | ranges::views::common);
-  }
-};
+  // namespace Detail {
+  //   template <typename T>
+  //   std::string stringify(const T& e);
+
+  //   CPP_template(typename I, typename S)
+  //   (requires (ranges::input_iterator<I> && ranges::sentinel_for<S, I>))
+  //     std::string rangeToString(I first, S last) {
+  //         std::stringstream rss;
+  //         rss << "{ ";
+  //         if (first != last) {
+  //             rss << ::Catch::Detail::stringify(*first);
+  //             for (++first; first != last; ++first)
+  //                 rss << ", " << ::Catch::Detail::stringify(*first);
+  //         }
+  //         rss << " }";
+  //         return rss.str();
+  //     } 
+  // }
+  template <typename I, typename S, ranges::subrange_kind K> 
+  struct is_range<ranges::subrange<I, S, K>> : std::false_type
+  {};
+  
+  template <typename I, typename S, ranges::subrange_kind K> struct StringMaker<ranges::subrange<I, S, K>> {
+    static std::string convert(ranges::subrange<I, S, K> view) {
+      return rangeToString(view | ranges::views::common);
+    }
+  };
 } // namespace Catch
 
 template <typename LHS, typename RHS>
@@ -84,17 +108,18 @@ template <typename LHS, typename RHS> RangeMatcher<LHS, RHS> Equals(RHS &&rhs) {
 }
 
 template <typename LHS, typename RHS>
+void CPP_fun(check_equal)(const LHS &lhs, RHS &&rhs, bool /*force_call*/ = false)(
+  requires ranges::forward_range<LHS> && ranges::forward_range<RHS> && ranges::range<const LHS>) {
+  REQUIRE_THAT(lhs,
+               Equals<decltype(lhs)>(std::forward<RHS>(rhs)));
+}
+
+template <typename LHS, typename RHS>
 void CPP_fun(check_equal)(LHS &&lhs, RHS &&rhs, bool /*force_call*/ = false)(
   requires ranges::forward_range<LHS> &&ranges::forward_range<RHS>) {
   // intentionally not forwarding lhs to enforce it being an lvalue reference
-#ifdef USE_NANORANGE
-  REQUIRE_THAT(ranges::ref_view(lhs),
-               Equals<decltype(ranges::ref_view(lhs))>(std::forward<RHS>(rhs)));
-#else
-  REQUIRE_THAT(
-    ranges::views::ref(lhs),
-    Equals<decltype(ranges::views::ref(lhs))>(std::forward<RHS>(rhs)));
-#endif
+  REQUIRE_THAT(ranges::subrange(lhs),
+               Equals<decltype(ranges::subrange(lhs))>(std::forward<RHS>(rhs)));
 }
 
 template <typename LHS, typename RHS>

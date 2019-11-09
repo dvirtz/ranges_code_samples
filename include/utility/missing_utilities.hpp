@@ -1,4 +1,5 @@
 #pragma once
+#include "utility/concepts.hpp"
 
 #ifdef USE_RANGE_V3
 #include <range/v3/view/c_str.hpp>
@@ -10,19 +11,6 @@ template <> struct is_char_type_<char8_t> : std::true_type {};
 #endif // _MSC_VER
 
 #else
-////////////////////////////////////////////////////////////////////////////////
-// CPP_fun
-// Usage:
-//   template <typename A, typename B>
-//   void CPP_fun(foo)(A a, B b)([const]opt [noexcept(true)]opt
-//       requires Concept1<A> && Concept2<B>)
-//   {}
-//
-// Note: This macro cannot be used when the last function argument is a
-//       parameter pack.
-#define CPP_PP_EXPAND(...) __VA_ARGS__
-#define CPP_FUN_IMPL_1_(...) (__VA_ARGS__) CPP_PP_EXPAND /**/
-#define CPP_fun(X) X CPP_FUN_IMPL_1_
 
 #ifdef USE_STL2
 #include <experimental/ranges/algorithm>
@@ -46,8 +34,9 @@ NANO_BEGIN_NAMESPACE
     return Cont{begin(common), end(common)};
   };
 
-  template <typename V>
-  auto CPP_fun(operator|)(V && v, decltype(to_vector) tv)(requires view<V>) {
+  CPP_template(typename V)
+  (requires view<V>)
+  auto operator|(V && v, decltype(to_vector) tv) {
     return tv(std::forward<V>(v));
   }
 
@@ -88,13 +77,6 @@ NANO_BEGIN_NAMESPACE
 #endif
 
   } // namespace views
-
-#ifdef USE_NANORANGE
-  template<typename V>
-  std::ostream& CPP_fun(operator<<)(std::ostream &ost, V v)(requires view<V>){
-    return ost;
-  }
-#endif
 
 #ifdef USE_STL2
 }

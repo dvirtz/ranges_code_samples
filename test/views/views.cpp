@@ -9,6 +9,7 @@
 #include <catch2/catch.hpp>
 #include <locale>
 #include <sstream>
+#include <numeric>
 
 #ifdef USE_CMCSTL2
 namespace std::experimental::ranges::v1::view {
@@ -26,13 +27,15 @@ TEST_CASE("all") {
 TEST_CASE("commmon") {
   #ifdef USE_RANGE_V3
   auto unreachable_sentinel = unreachable;
+  #elif USE_STL2
+  auto unreachable_sentinel = unreachable{};
   #endif
   
   auto &&rng = views::iota(0, unreachable_sentinel) | views::take(4);
   static_assert(!common_range<decltype(rng)>);
   auto &&res = views::common(rng);
   static_assert(common_range<decltype(res)>);
-  REQUIRE(std::equal(res.begin(), res.end(), begin(rng)));
+  REQUIRE(std::accumulate(res.begin(), res.end(), 0) == 10);
 }
 
 TEST_CASE("counted") {

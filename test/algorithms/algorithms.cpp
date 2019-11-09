@@ -8,6 +8,7 @@
 #else
 #include <experimental/ranges/algorithm>
 #include <experimental/ranges/ranges>
+#include <experimental/ranges/memory>
 #endif
 #include "test/range_matcher.hpp"
 #include <vector>
@@ -185,7 +186,7 @@ TEST_CASE("find_end") {
 
   SECTION("found") {
     const int to_find[] = {3, 4};
-#ifndef USE_CMCSTL2
+#ifndef USE_STL2
     auto [b, e] = find_end(rng, to_find);
     REQUIRE(b == begin(rng) + 4);
     REQUIRE(e == end(rng));
@@ -197,7 +198,7 @@ TEST_CASE("find_end") {
 
   SECTION("not found") {
     const int to_find[] = {3, 2};
-#ifndef USE_CMCSTL2
+#ifndef USE_STL2
     auto [b, e] = find_end(rng, to_find);
     REQUIRE(b == end(rng));
     REQUIRE(e == end(rng));
@@ -681,7 +682,7 @@ TEST_CASE("search") {
 TEST_CASE("search_n") {
   int rng[]  = {41, 42, 42, 42, 42, 43, 44};
   auto &&res = search_n(rng, 4, 42);
-#ifndef USE_CMCSTL2
+#ifndef USE_STL2
   check_equal(res, {42, 42, 42, 42});
 #else
   REQUIRE(res == begin(rng) + 1);
