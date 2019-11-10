@@ -64,6 +64,7 @@ find_package(cmcstl2 CONFIG)
 find_package(nanorange CONFIG REQUIRED)
 
 option(RUN_TESTS_POSTBUILD OFF)
+include(CTest)
 
 add_subdirectory(example)
 add_subdirectory(test)

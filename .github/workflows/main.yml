@@ -14,7 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: run docker
-        run: docker run --rm -v $GITHUB_WORKSPACE:/home/conan/repo --env BUILD_TYPE=${{ matrix.build_type }} conanio/${{ matrix.image }} cmake -DBUILD_TYPE=${{ matrix.build_type }} -P /home/conan/repo/ci/build.cmake
+        run: |
+          mkdir build
+          docker run --rm -v $GITHUB_WORKSPACE:/home/conan/repo conanio/${{ matrix.image }} cmake -DBUILD_TYPE=${{ matrix.build_type }} -P /home/conan/repo/ci/build.cmake
         
   # windows-docker:
   #   strategy:

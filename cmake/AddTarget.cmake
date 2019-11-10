@@ -28,15 +28,15 @@ function(add_ranges_test name)
   target_link_libraries(${name} Catch2::Catch2)
       
   include(Catch)
-    catch_discover_tests(${name}
-      PROPERTIES LABELS ${name})
-  
-    if(RUN_TESTS_POSTBUILD)
-      add_custom_command(TARGET ${name}
-        POST_BUILD
-        COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIG> -L ${name} --output-on-failure -j8
-        COMMENT "Running ${name} tests")
-    endif()
+  catch_discover_tests(${name}
+    PROPERTIES LABELS ${name})
+
+  if(RUN_TESTS_POSTBUILD)
+    add_custom_command(TARGET ${name}
+      POST_BUILD
+      COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIG> -L ${name} --output-on-failure -j8
+      COMMENT "Running ${name} tests")
+  endif()
 
 endfunction()
 

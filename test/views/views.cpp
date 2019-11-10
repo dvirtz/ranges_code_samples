@@ -31,7 +31,7 @@ TEST_CASE("commmon") {
   auto unreachable_sentinel = unreachable{};
   #endif
   
-  auto &&rng = views::iota(0, unreachable_sentinel) | views::take(4);
+  auto &&rng = views::iota(1, unreachable_sentinel) | views::take(4);
   static_assert(!common_range<decltype(rng)>);
   auto &&res = views::common(rng);
   static_assert(common_range<decltype(res)>);
