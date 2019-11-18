@@ -16,6 +16,7 @@ jobs:
       - name: run docker
         run: |
           mkdir build
+          chmod 777 build
           docker run --rm -v $GITHUB_WORKSPACE:/home/conan/repo conanio/${{ matrix.image }} cmake -DBUILD_TYPE=${{ matrix.build_type }} -P /home/conan/repo/ci/build.cmake
         
   # windows-docker:
