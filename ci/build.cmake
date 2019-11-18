@@ -23,5 +23,6 @@ if(NOT DEFINED BUILD_FOLDER)
 endif()
 
 execute(ls -l ${SOURCE_FOLDER})
+execute(touch ${BUILD_FOLDER}/tmp.txt)
 execute(${CMAKE_COMMAND} -S ${SOURCE_FOLDER} -B ${BUILD_FOLDER} -G Ninja -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DRUN_TESTS_POSTBUILD=ON)
 execute(${CMAKE_COMMAND} --build ${BUILD_FOLDER})
