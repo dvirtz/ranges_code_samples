@@ -1,14 +1,17 @@
 include(CTest)
 
 function(add_range_target name rangeLib)
-  if (rangeLib STREQUAL stl2 AND NOT TARGET stl2)
+  if (NOT TARGET ${rangeLib})
+    message(WARNING "No target ${rangeLib}")
     return()
   endif()
   add_executable(${name} ${ARGN})
-  target_link_libraries(${name} ${rangeLib})
+  target_link_libraries(${name} ${rangeLib} concepts)
   target_include_directories(${name} PRIVATE ${CMAKE_SOURCE_DIR}/include)
-  target_compile_definitions(${name} PRIVATE $<IF:$<STREQUAL:${rangeLib},range-v3>,USE_RANGE_V3,USE_STL2>)
-  # target_compile_options(${name} PRIVATE "-fconcepts")
+  string(REGEX REPLACE ".*::" "" macroName ${rangeLib})
+  string(REPLACE "-" "_" macroName ${macroName})
+  string(TOUPPER USE_${macroName} macroName)
+  target_compile_definitions(${name} PRIVATE ${macroName})
 endfunction()
 
 function(add_ranges_test name)
@@ -25,15 +28,15 @@ function(add_ranges_test name)
   target_link_libraries(${name} Catch2::Catch2)
       
   include(Catch)
-    catch_discover_tests(${name}
-      PROPERTIES LABELS ${name})
-  
-    if(RUN_TESTS_POSTBUILD)
-      add_custom_command(TARGET ${name}
-        POST_BUILD
-        COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIG> -L ${name} --output-on-failure -j8
-        COMMENT "Running ${name} tests")
-    endif()
+  catch_discover_tests(${name}
+    PROPERTIES LABELS ${name})
+
+  if(RUN_TESTS_POSTBUILD)
+    add_custom_command(TARGET ${name}
+      POST_BUILD
+      COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIG> -L ${name} --output-on-failure -j8
+      COMMENT "Running ${name} tests")
+  endif()
 
 endfunction()
 

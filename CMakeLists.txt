@@ -41,9 +41,10 @@ set(DEPENDENCIES
       range-v3/0.9.0@ericniebler/stable
       Catch2/2.9.2@catchorg/stable
       google_benchmark/1.5.0@onebaseroach/stable
+      nanorange/74aa96f0@tcbrindle/testing
 )
 
-if((CMAKE_CXX_COMPILER_ID STREQUAL GCC) OR (CMAKE_CXX_COMPILER_ID STREQUAL Clang))
+if((CMAKE_CXX_COMPILER_ID STREQUAL GNU) OR (CMAKE_CXX_COMPILER_ID STREQUAL Clang))
   list(APPEND DEPENDENCIES 
         cmcstl2/2019.08.07@mpusz/stable)
 endif()
@@ -60,8 +61,10 @@ find_package(range-v3 CONFIG REQUIRED)
 find_package(Catch2 CONFIG REQUIRED)
 find_package(benchmark CONFIG REQUIRED)
 find_package(cmcstl2 CONFIG)
+find_package(nanorange CONFIG REQUIRED)
 
 option(RUN_TESTS_POSTBUILD OFF)
+include(CTest)
 
 add_subdirectory(example)
 add_subdirectory(test)

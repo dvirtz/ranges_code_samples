@@ -1,11 +1,14 @@
 #include <catch2/catch.hpp>
 #ifdef USE_RANGE_V3
 #include <range/v3/algorithm.hpp>
-#include <range/v3/view.hpp>
 #include <range/v3/iterator/insert_iterators.hpp>
+#include <range/v3/view.hpp>
+#elif defined(USE_NANORANGE)
+#include <nanorange.hpp>
 #else
 #include <experimental/ranges/algorithm>
 #include <experimental/ranges/ranges>
+#include <experimental/ranges/memory>
 #endif
 #include "test/range_matcher.hpp"
 #include <vector>
@@ -17,7 +20,7 @@ TEST_CASE("dangling") {
 
   auto result1 = find(f(), 42);
   static_assert(same_as<decltype(result1), dangling>);
-  
+
   auto vec     = f();
   auto result2 = find(vec, 42);
   static_assert(same_as<decltype(result2), std::vector<int>::iterator>);
@@ -160,7 +163,7 @@ TEST_CASE("fill") {
 
 TEST_CASE("fill_n") {
   std::vector<int> out;
-  fill_n(back_inserter(out), 5, 42);
+  fill_n(ranges::back_inserter(out), 5, 42);
   check_equal(out, {42, 42, 42, 42, 42});
 }
 
@@ -183,8 +186,8 @@ TEST_CASE("find_end") {
 
   SECTION("found") {
     const int to_find[] = {3, 4};
-#ifdef USE_RANGE_V3
-    auto [b, e]          = find_end(rng, to_find);
+#ifndef USE_STL2
+    auto [b, e] = find_end(rng, to_find);
     REQUIRE(b == begin(rng) + 4);
     REQUIRE(e == end(rng));
 #else
@@ -195,8 +198,8 @@ TEST_CASE("find_end") {
 
   SECTION("not found") {
     const int to_find[] = {3, 2};
-#ifdef USE_RANGE_V3
-    auto [b, e]          = find_end(rng, to_find);
+#ifndef USE_STL2
+    auto [b, e] = find_end(rng, to_find);
     REQUIRE(b == end(rng));
     REQUIRE(e == end(rng));
 #else
@@ -252,13 +255,24 @@ TEST_CASE("find_if_not") {
 
 TEST_CASE("for_each") {
   std::vector<int> v1{0, 2, 4, 6};
-  int sum  = 0;
+  int sum       = 0;
   auto &&[i, f] = for_each(v1, [&](int i) { sum += i; });
   REQUIRE(sum == 12);
   REQUIRE(i == v1.end());
   f(1);
   REQUIRE(sum == 13);
 }
+
+#ifdef USE_RANGE_V3
+TEST_CASE("for_each_n") {
+  int sum  = 0;
+  auto fun = [&](int i) { sum += i; };
+  std::vector<int> v1{0, 2, 4, 6};
+  auto i = for_each_n(begin(v1), 3, fun);
+  REQUIRE(i == v1.begin() + 3);
+  REQUIRE(sum == 6);
+}
+#endif
 
 TEST_CASE("generate") {
   std::vector<int> out(5u);
@@ -268,7 +282,8 @@ TEST_CASE("generate") {
 
 TEST_CASE("generate_n") {
   std::vector<int> out;
-  generate_n(back_inserter(out), 5, [i = 0]() mutable { return 42 + i++; });
+  generate_n(ranges::back_inserter(out), 5,
+             [i = 0]() mutable { return 42 + i++; });
   check_equal(out, {42, 43, 44, 45, 46});
 }
 
@@ -281,11 +296,11 @@ TEST_CASE("heap_algorithm") {
   rng.push_back(8.5);
   push_heap(rng);
   check_equal(rng,
-             std::initializer_list<double>{9, 8.5, 6, 7, 8, 5, 2, 0, 3, 1, 4});
+              std::initializer_list<double>{9, 8.5, 6, 7, 8, 5, 2, 0, 3, 1, 4});
 
   pop_heap(rng);
   check_equal(rng,
-             std::initializer_list<double>{8.5, 8, 6, 7, 4, 5, 2, 0, 3, 1, 9});
+              std::initializer_list<double>{8.5, 8, 6, 7, 4, 5, 2, 0, 3, 1, 9});
 
   REQUIRE_FALSE(is_heap(rng));
 
@@ -375,7 +390,7 @@ TEST_CASE("max_element") {
 #ifdef USE_RANGE_V3
   const int rng[] = {4, 2, 3, 1, 4};
 #else
-  https://github.com/CaseyCarter/cmcstl2/issues/306
+  // https://github.com/CaseyCarter/cmcstl2/issues/306
   const int rng[] = {4, 2, 3, 1};
 #endif
 
@@ -387,7 +402,7 @@ TEST_CASE("merge") {
   int rng0[] = {0, 1, 2, 6, 7};
   int rng1[] = {3, 4, 7, 8, 9};
   std::vector<int> out;
-  merge(rng0, rng1, back_inserter(out));
+  merge(rng0, rng1, ranges::back_inserter(out));
   check_equal(out, {0, 1, 2, 3, 4, 6, 7, 7, 8, 9});
 }
 
@@ -444,11 +459,11 @@ TEST_CASE("move") {
              | views::transform([](int i) { return std::vector<int>{i}; })
              | to_vector;
   std::vector<std::vector<int>> out;
-  move(rng, back_inserter(out));
+  move(rng, ranges::back_inserter(out));
   check_equal(rng, std::initializer_list<std::vector<int>>{{}, {}, {}, {}, {}});
   check_equal(out, views::iota(0, 5) | views::transform([](int i) {
-                    return std::vector<int>{i};
-                  }));
+                     return std::vector<int>{i};
+                   }));
 }
 
 TEST_CASE("move_backward") {
@@ -457,7 +472,7 @@ TEST_CASE("move_backward") {
              | to_vector;
   move_backward(begin(rng), begin(rng) + 3, end(rng));
   check_equal(rng, {std::vector<int>{}, std::vector<int>{}, std::vector<int>{0},
-                   std::vector<int>{1}, std::vector<int>{2}});
+                    std::vector<int>{1}, std::vector<int>{2}});
 }
 
 TEST_CASE("none_of") {
@@ -574,12 +589,13 @@ TEST_CASE("remove") {
     std::vector<int> out;
 
     SECTION("value") {
-      remove_copy(rng, back_inserter(out), 4);
+      remove_copy(rng, ranges::back_inserter(out), 4);
       check_equal(out, {2, 3, 1});
     }
 
     SECTION("predicate") {
-      remove_copy_if(rng, back_inserter(out), [](int i) { return i % 2 == 0; });
+      remove_copy_if(rng, ranges::back_inserter(out),
+                     [](int i) { return i % 2 == 0; });
       check_equal(out, {3, 1});
     }
   }
@@ -604,13 +620,13 @@ TEST_CASE("replace") {
     std::vector<int> out;
 
     SECTION("value") {
-      replace_copy(rng, back_inserter(out), 4, 5);
+      replace_copy(rng, ranges::back_inserter(out), 4, 5);
       check_equal(out, {5, 2, 3, 1, 5});
     }
 
     SECTION("predicate") {
-      replace_copy_if(rng, back_inserter(out), [](int i) { return i % 2 == 0; },
-                      5);
+      replace_copy_if(rng, ranges::back_inserter(out),
+                      [](int i) { return i % 2 == 0; }, 5);
       check_equal(out, {5, 5, 3, 1, 5});
     }
   }
@@ -646,17 +662,27 @@ TEST_CASE("rotate") {
   }
 }
 
+#ifdef USE_RANGE_V3
+TEST_CASE("sample") {
+  const int rng[] = {0, 1, 2, 3, 4, 5};
+  int out[4];
+  sample(rng, out);
+  REQUIRE(is_sorted(out));
+  REQUIRE(includes(rng, out));
+}
+#endif
+
 TEST_CASE("search") {
-  auto rng   = views::iota(0);
+  auto rng        = views::iota(0);
   int to_search[] = {42, 43, 44};
-  auto &&res  = search(rng, to_search);
+  auto &&res      = search(rng, to_search);
   check_equal(res, to_search);
 }
 
 TEST_CASE("search_n") {
-  int rng[] = {41, 42, 42, 42, 42, 43, 44};
-  auto &&res  = search_n(rng, 4, 42);
-#ifdef USE_RANGE_V3
+  int rng[]  = {41, 42, 42, 42, 42, 43, 44};
+  auto &&res = search_n(rng, 4, 42);
+#ifndef USE_STL2
   check_equal(res, {42, 42, 42, 42});
 #else
   REQUIRE(res == begin(rng) + 1);
@@ -665,27 +691,28 @@ TEST_CASE("search_n") {
 
 TEST_CASE("set_algorithms") {
   auto multiples_of_3 = {0, 3, 6, 9, 12, 15, 18, 21, 24, 27};
-  auto squares =
-    views::iota(0) | views::transform([](int x) { return x * x; }) | views::take(6);
+  auto squares = views::iota(0) | views::transform([](int x) { return x * x; })
+                 | views::take(6);
   std::vector<int> out;
 
   SECTION("set_difference") {
-    set_difference(multiples_of_3, squares, back_inserter(out));
+    set_difference(multiples_of_3, squares, ranges::back_inserter(out));
     check_equal(out, {3, 6, 12, 15, 18, 21, 24, 27});
   }
 
   SECTION("set_intersection") {
-    set_intersection(multiples_of_3, squares, back_inserter(out));
+    set_intersection(multiples_of_3, squares, ranges::back_inserter(out));
     check_equal(out, {0, 9});
   }
 
   SECTION("set_union") {
-    set_union(multiples_of_3, squares, back_inserter(out));
+    set_union(multiples_of_3, squares, ranges::back_inserter(out));
     check_equal(out, {0, 1, 3, 4, 6, 9, 12, 15, 16, 18, 21, 24, 25, 27});
   }
 
   SECTION("set_symmetric_difference") {
-    set_symmetric_difference(multiples_of_3, squares, back_inserter(out));
+    set_symmetric_difference(multiples_of_3, squares,
+                             ranges::back_inserter(out));
     check_equal(out, {1, 3, 4, 6, 12, 15, 16, 18, 21, 24, 25, 27});
   }
 
@@ -708,7 +735,7 @@ TEST_CASE("set_algorithms") {
 
 TEST_CASE("shuffle") {
   int rng[] = {0, 1, 2, 3, 4, 5};
-  shuffle(rng);
+  shuffle(rng, std::mt19937{});
   REQUIRE(!is_sorted(rng));
   int sorted[] = {0, 1, 2, 3, 4, 5};
   REQUIRE(is_permutation(rng, sorted));
@@ -727,15 +754,15 @@ TEST_CASE("stable_partition") {
   stable_partition(rng, [](int i) { return i % 2 == 0; },
                    &std::pair<int, int>::second);
   check_equal(rng, std::initializer_list<std::pair<int, int>>{{1, 0},
-                                                             {2, 2},
-                                                             {6, 4},
-                                                             {7, 8},
-                                                             {8, 6},
-                                                             {0, 7},
-                                                             {3, 9},
-                                                             {4, 3},
-                                                             {5, 5},
-                                                             {9, 1}});
+                                                              {2, 2},
+                                                              {6, 4},
+                                                              {7, 8},
+                                                              {8, 6},
+                                                              {0, 7},
+                                                              {3, 9},
+                                                              {4, 3},
+                                                              {5, 5},
+                                                              {9, 1}});
 }
 
 TEST_CASE("stable_sort") {
@@ -743,20 +770,20 @@ TEST_CASE("stable_sort") {
                                {5, 1}, {6, 1}, {7, 2}, {8, 0}, {9, 1}};
   stable_sort(rng, {}, &std::pair<int, int>::second);
   check_equal(rng, std::initializer_list<std::pair<int, int>>{{1, 0},
-                                                             {3, 0},
-                                                             {8, 0},
-                                                             {5, 1},
-                                                             {6, 1},
-                                                             {9, 1},
-                                                             {0, 2},
-                                                             {2, 2},
-                                                             {7, 2},
-                                                             {4, 3}});
+                                                              {3, 0},
+                                                              {8, 0},
+                                                              {5, 1},
+                                                              {6, 1},
+                                                              {9, 1},
+                                                              {0, 2},
+                                                              {2, 2},
+                                                              {7, 2},
+                                                              {4, 3}});
 }
 
 TEST_CASE("swap_ranges") {
-  int rng0[] = {0, 1, 2, 3, 4, 5, 6};
-  int rng1[] = {46, 45, 44, 43, 42, 41, 40};
+  std::vector<int> rng0{0, 1, 2, 3, 4, 5, 6};
+  std::vector<int> rng1{46, 45, 44, 43, 42, 41, 40};
 
   swap_ranges(rng0, rng1);
 
@@ -784,7 +811,7 @@ TEST_CASE("unique") {
 
   SECTION("copy") {
     std::vector<int> out;
-    unique_copy(rng, back_inserter(out));
+    unique_copy(rng, ranges::back_inserter(out));
 
     check_equal(out, {0, 1, 5, 3, 4});
   }
@@ -803,3 +830,109 @@ TEST_CASE("upper_bound") {
     REQUIRE(res == begin(rng) + 4);
   }
 }
+
+namespace uninitialized_memory{
+  
+  struct S {
+    S() { ++instances; }
+    S(int i) : i{i} { ++instances; }
+    S(const S &s) : i{s.i} { ++instances; }
+    S(S &&s) : i{s.i} {
+      s.i = 0;
+      ++instances;
+    }
+    ~S() noexcept { --instances; }
+
+    S &operator=(const S &) = default;
+    S &operator=(S &&) = default;
+
+    int i                   = 0;
+    static size_t instances;
+  };
+
+  size_t S::instances = 0;
+}
+
+#ifndef USE_RANGE_V3
+TEST_CASE("uninitialized_memory") {
+  using uninitialized_memory::S;
+
+  constexpr size_t N = 10;
+  auto data          = std::allocator<S>{}.allocate(N);
+  auto buffer        = views::counted(data, N);
+
+  SECTION("regular") {
+    SECTION("uninitialized_default_construct") {
+      uninitialized_default_construct(buffer);
+    }
+
+    SECTION("uninitialized_value_construct") {
+      uninitialized_value_construct(buffer);
+    }
+
+    SECTION("uninitialized_fill") {
+      uninitialized_fill(buffer, S{42});
+      check_equal(buffer | views::transform(&S::i), std::vector<int>(N, 42));
+    }
+
+    SECTION("uninitialized_copy") {
+      auto ints = views::iota(0, static_cast<int>(N));
+      uninitialized_copy(ints, buffer);
+      check_equal(buffer | views::transform(&S::i), ints);
+    }
+
+    SECTION("uninitialized_move") {
+      auto ints = views::iota(0, static_cast<int>(N));
+      auto source =
+        ints | views::transform([](int i) { return S{i}; }) | to_vector;
+      uninitialized_move(source, buffer);
+      REQUIRE(S::instances == 2 * N);
+      check_equal(buffer | views::transform(&S::i), ints);
+      check_equal(source | views::transform(&S::i), std::vector<int>(N, 0));
+    }
+
+    REQUIRE(S::instances == N);
+    destroy(buffer);
+  }
+
+  SECTION("counted") {
+    constexpr ptrdiff_t K = 5;
+
+    SECTION("uninitalized_default_construct_n") {
+      uninitialized_default_construct_n(begin(buffer), K);
+    }
+
+    SECTION("uninitialized_value_construct_n") {
+      uninitialized_value_construct_n(begin(buffer), K);
+    }
+
+    SECTION("uninitialized_fill_n") {
+      uninitialized_fill_n(begin(buffer), K, S{42});
+      check_equal(buffer | views::transform(&S::i) | views::take(K),
+                  std::vector<int>(K, 42));
+    }
+
+    SECTION("uninitialized_copy_n") {
+      auto ints = views::iota(0, static_cast<int>(K));
+      uninitialized_copy_n(begin(ints), K, begin(buffer), end(buffer));
+      check_equal(buffer | views::transform(&S::i) | views::take(K), ints);
+    }
+
+    SECTION("uninitialized_move_n") {
+      auto ints = views::iota(0, static_cast<int>(K));
+      auto source =
+        ints | views::transform([](int i) { return S{i}; }) | to_vector;
+      uninitialized_move_n(begin(source), K, begin(buffer), end(buffer));
+      REQUIRE(S::instances == 2 * K);
+      check_equal(buffer | views::transform(&S::i) | views::take(K), ints);
+      check_equal(source | views::transform(&S::i), std::vector<int>(K, 0));
+    }
+
+    REQUIRE(S::instances == K);
+    destroy_n(begin(buffer), K);
+  }
+
+  REQUIRE(S::instances == 0);
+  std::allocator<S>{}.deallocate(data, N);
+}
+#endif
