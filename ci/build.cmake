@@ -19,10 +19,8 @@ get_filename_component(SOURCE_FOLDER ${CMAKE_SCRIPT_MODE_FILE} DIRECTORY)
 get_filename_component(SOURCE_FOLDER ${SOURCE_FOLDER} DIRECTORY)
 
 if(NOT DEFINED BUILD_FOLDER)
-    set(BUILD_FOLDER ${SOURCE_FOLDER}/build)
+    set(BUILD_FOLDER build)
 endif()
 
-execute(ls -l ${SOURCE_FOLDER})
-execute(touch ${BUILD_FOLDER}/tmp.txt)
 execute(${CMAKE_COMMAND} -S ${SOURCE_FOLDER} -B ${BUILD_FOLDER} -G Ninja -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DRUN_TESTS_POSTBUILD=ON)
 execute(${CMAKE_COMMAND} --build ${BUILD_FOLDER})
