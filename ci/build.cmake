@@ -11,10 +11,6 @@ function(execute EXECUTABLE)
     endif()
 endfunction()
 
-execute(conan remote add -f onebaseroach https://api.bintray.com/conan/y4n9squared/onebaseroach)
-execute(conan remote add -f mputsz https://api.bintray.com/conan/mpusz/conan-mpusz)
-execute(conan remote add -f dvirtz https://api.bintray.com/conan/dvirtz/conan)
-
 get_filename_component(SOURCE_FOLDER ${CMAKE_SCRIPT_MODE_FILE} DIRECTORY)
 get_filename_component(SOURCE_FOLDER ${SOURCE_FOLDER} DIRECTORY)
 
