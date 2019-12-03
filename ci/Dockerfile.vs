@@ -1,6 +1,6 @@
 # escape=`
 
-FROM mcr.microsoft.com/dotnet/framework/sdk:4.8-windowsservercore-1903
+FROM mcr.microsoft.com/dotnet/framework/sdk:4.8
 
 LABEL maintainer="Luis Martinez de Bartolome <luism@jfrog.com>"
 
