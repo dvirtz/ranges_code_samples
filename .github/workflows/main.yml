@@ -12,7 +12,7 @@ jobs:
         build_type: [Debug, Release]
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2-beta
       - name: run docker
         run: docker run --rm -v $GITHUB_WORKSPACE:/home/conan/repo conanio/${{ matrix.image }} cmake -DBUILD_TYPE=${{ matrix.build_type }} -P /home/conan/repo/ci/build.cmake
         
@@ -22,7 +22,7 @@ jobs:
         build_type: [Debug, Release]
     runs-on: windows-2019
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2-beta
       - name: build docker
         run: docker build -f ci\Dockerfile.vs -t msvc_16 ci
       - name: run docker
