@@ -21,8 +21,8 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE)
   set(ENV{CONAN_CMAKE_GENERATOR} ${CMAKE_GENERATOR})
 endif()
 
-# has no effect currently
-# https://github.com/conan-io/cmake-conan/issues/176
+conan_check()
+
 conan_add_remote(
   NAME onebaseroach 
   URL https://api.bintray.com/conan/y4n9squared/onebaseroach)
@@ -30,6 +30,10 @@ conan_add_remote(
 conan_add_remote(
   NAME mputsz
   URL https://api.bintray.com/conan/mpusz/conan-mpusz)
+
+conan_add_remote(
+  NAME dvirtz
+  URL https://api.bintray.com/conan/dvirtz/conan)
 
 set(CMAKE_CXX_STANDARD 20)
 
